@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "dev": "DEBUG=app,app:* nodemon server.js",
-    "server": "node server.js"
+    "server": "node server.js",
+    "windev": "SET DEBUG=app,app:* && nodemon server.js"
   },
   "author": "takashi",
   "license": "ISC",

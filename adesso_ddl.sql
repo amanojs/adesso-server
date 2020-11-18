@@ -52,3 +52,73 @@ null,
 "1.jpg",
 "2020/11/18 12:10:00"
 );
+INSERT INTO m_shops VALUES(
+null,
+"The Rich Kibun",
+"8870011",
+"宮崎県日南市捕鯨1-2",
+"takashivue@gmail.com",
+"08090509926",
+"2.jpg",
+"2020/11/18 12:10:00"
+);
+INSERT INTO m_shops VALUES(
+null,
+"ラーメン食堂 ~ assari ~",
+"8860001",
+"宮崎県えびの市捕鯨1-2",
+"takashivue@gmail.com",
+"08090509926",
+"3.jpg",
+"2020/11/18 12:10:00"
+);
+INSERT INTO m_shops VALUES(
+null,
+"餃子のニシヤマ",
+"4510046",
+"愛知県名古屋市中村区",
+"takashivue@gmail.com",
+"08090509926",
+"4.jpg",
+"2020/11/18 12:10:00"
+);
+INSERT INTO m_shops VALUES(
+null,
+"スシオー",
+"4510046",
+"愛知県名古屋市中村区",
+"takashivue@gmail.com",
+"08090509926",
+"5.jpg",
+"2020/11/18 12:10:00"
+);
+INSERT INTO m_shops VALUES(
+null,
+"サイゾリア",
+"4510046",
+"愛知県名古屋市中村区",
+"takashivue@gmail.com",
+"08090509926",
+"6.jpg",
+"2020/11/18 12:10:00"
+);
+INSERT INTO m_shops VALUES(
+null,
+"洋食屋さと",
+"4510046",
+"愛知県名古屋市中村区",
+"takashivue@gmail.com",
+"08090509926",
+"7.jpg",
+"2020/11/18 12:10:00"
+);
+INSERT INTO m_shops VALUES(
+null,
+"マクドナダル",
+"4510046",
+"愛知県名古屋市中村区",
+"takashivue@gmail.com",
+"08090509926",
+"8.jpg",
+"2020/11/18 12:10:00"
+);
