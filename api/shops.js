@@ -20,9 +20,27 @@ module.exports = () => {
     })
 
     shopRouter.route("/searchShops").get((req, res) => {
-        geocoder("愛知県").then((data) => {
-            debug(data)
-            res.json(data.results[0].geometry.bounds)
+        geocoder("宮崎県").then((data) => {
+            if (!("bounds" in data.geometry)) {
+                res.json({ status: "error", msg: "無効なエリアです" })
+            }
+            const { bounds } = data.geometry
+            debug(bounds)
+            const com = { lat: {}, lon: {} }
+            com.lat =
+                bounds.northeast.lat > bounds.southwest.lat ?
+                    [bounds.northeast.lat, bounds.southwest.lat] : [bounds.southwest.lat, bounds.northeast.lat]
+            com.lon =
+                bounds.northeast.lng > bounds.southwest.lng ?
+                    [bounds.northeast.lng, bounds.southwest.lng] : [bounds.southwest.lng, bounds.northeast.lng]
+            const sql =
+                "SELECT * FROM m_shops WHERE latitude < ? AND latitude > ? AND longitude < ? AND longitude > ?;"
+            client.query(sql, [...com.lat, ...com.lon], (err, result) => {
+                if (err) {
+                    throw err
+                }
+                res.json(result)
+            })
         }).catch(err => {
             debug(err)
         })
