@@ -8,9 +8,9 @@ module.exports = (address) => {
     }
     (async function () {
       const URL = encodeURI(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.GOOGLE_KEY}`)
-      debug(URL)
       const { data } = await axios.get(URL)
-      resolve(data)
+      debug(data)
+      resolve(data.results[0])
     }())
   })
 }
