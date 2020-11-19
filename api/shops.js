@@ -12,5 +12,9 @@ module.exports = () => {
             res.json(result)
         })
     })
+
+    shopRouter.route("/getNearShops").get((req, res) => {
+        const sql = "SELECT * FROM m_shops;"
+    })
     return shopRouter
 }
