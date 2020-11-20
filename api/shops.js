@@ -100,11 +100,14 @@ module.exports = () => {
             for (let i = 0; i < result.length; i++) {
                 myPromise = myPromise.then(getRate.bind(this, result[i].shop_id)).then((data) => {
                     resData.push({ ...result[i], graphData: data })
-                    if (i === (result.length - 1)) {
-                        res.json(resData)
-                    }
                 })
             }
+            myPromise.then(() => {
+                return new Promise((resolve, reject) => {
+                    res.json(resData)
+                    resolve()
+                })
+            })
         })
     })
 
