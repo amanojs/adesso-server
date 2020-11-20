@@ -81,7 +81,15 @@ module.exports = () => {
         const service = req.body.service
         const atmosphere = req.body.atmosphere
         const speed = req.body.speed
-        const sql = "SELECT shop_id FROM t_reviews GROUP BY shop_id HAVING avg(taste) > ? AND avg(price) > ? AND avg(service) > ? AND avg(atmosphere) > ? AND avg(speed) > ?;"
+        const sql = "SELECT t_reviews.shop_id,m_shops.shop_name FROM t_reviews INNER JOIN m_shops ON t_reviews.shop_id = m_shops.shop_id GROUP BY shop_id HAVING avg(taste) >= ? AND avg(price) >= ? AND avg(service) >= ? AND avg(atmosphere) >= ? AND avg(speed) >= ?;"
+        const placeholder = [taste, price, service, atmosphere, speed]
+        client.query(sql, placeholder, (err, result) => {
+            if (err) {
+                throw err
+            }
+            debug(result)
+            res.json(result)
+        })
     })
 
     return shopRouter
