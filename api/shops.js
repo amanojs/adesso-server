@@ -4,8 +4,6 @@ const client = require("./config/mysql")()
 const geocoder = require("./config/geocoder")
 const debug = require("debug")("app:shops")
 
-let myPromise = Promise.resolve()
-
 const getRate = (shopId) => {
     return new Promise((resolve, reject) => {
         const sql =
@@ -36,7 +34,13 @@ module.exports = () => {
     })
 
     shopRouter.route("/searchShops").get((req, res) => {
-        geocoder("宮崎県").then((data) => {
+        const area = String(req.query.area)
+        let tags = []
+        if ("tags" in req.query) {
+            const tags_str = String(req.query.tags)
+            tags = tags_str.split(",")
+        }
+        geocoder(area).then((data) => {
             if (!("bounds" in data.geometry)) {
                 res.json({ status: "error", msg: "無効なエリアです" })
             }
@@ -49,13 +53,39 @@ module.exports = () => {
             com.lon =
                 bounds.northeast.lng > bounds.southwest.lng ?
                     [bounds.northeast.lng, bounds.southwest.lng] : [bounds.southwest.lng, bounds.northeast.lng]
-            const sql =
-                "SELECT * FROM m_shops WHERE latitude < ? AND latitude > ? AND longitude < ? AND longitude > ?;"
+            let sql = ""
+            if (tags.length) {
+                sql = "SELECT COUNT(tag),(MAX(m_shops.shop_id)) as shop_id,(MAX(m_shops.shop_name)) as shop_name,(SELECT GROUP_CONCAT(tag) FROM t_tags WHERE shop_id = m_shops.shop_id GROUP BY shop_id) as tags FROM m_shops INNER JOIN t_tags ON t_tags.shop_id = m_shops.shop_id WHERE latitude < ? AND latitude > ? AND longitude < ? AND longitude > ?"
+                for ([i, tag] of tags.entries()) {
+                    if (i === 0) {
+                        sql += ` AND t_tags.tag LIKE '%${tag}%'`
+                    } else {
+                        sql += ` OR t_tags.tag LIKE '%${tag}%'`
+                    }
+                }
+                sql += ` GROUP BY m_shops.shop_id HAVING COUNT(tag) = ${tags.length}`
+                debug(sql)
+            } else {
+                sql = "SELECT m_shops.shop_id,m_shops.shop_name,GROUP_CONCAT(t_tags.tag) as tags FROM m_shops LEFT OUTER JOIN t_tags ON t_tags.shop_id = m_shops.shop_id WHERE latitude < ? AND latitude > ? AND longitude < ? AND longitude > ? GROUP BY m_shops.shop_id"
+            }
+            debug(sql)
             client.query(sql, [...com.lat, ...com.lon], (err, result) => {
                 if (err) {
                     throw err
                 }
-                res.json(result)
+                const resData = []
+                let myPromise = Promise.resolve()
+                for (let i = 0; i < result.length; i++) {
+                    myPromise = myPromise.then(getRate.bind(this, result[i].shop_id)).then((data) => {
+                        resData.push({ ...result[i], graphData: data })
+                    })
+                }
+                myPromise.then(() => {
+                    return new Promise((resolve, reject) => {
+                        res.json(resData)
+                        resolve()
+                    })
+                })
             })
         }).catch(err => {
             debug(err)
@@ -97,6 +127,7 @@ module.exports = () => {
             }
             debug(result)
             const resData = []
+            let myPromise = Promise.resolve()
             for (let i = 0; i < result.length; i++) {
                 myPromise = myPromise.then(getRate.bind(this, result[i].shop_id)).then((data) => {
                     resData.push({ ...result[i], graphData: data })

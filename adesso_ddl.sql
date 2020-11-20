@@ -151,6 +151,21 @@ null,
 "2020/11/18 12:10:00"
 );
 
+INSERT INTO t_tags VALUES(
+1,
+"食堂"
+);
+
+INSERT INTO t_tags VALUES(
+1,
+"大盛無料"
+);
+
+INSERT INTO t_tags VALUES(
+2,
+"食堂"
+);
+
 
 /* reviews */
 INSERT INTO t_reviews VALUES(
