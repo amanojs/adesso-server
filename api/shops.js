@@ -54,7 +54,35 @@ module.exports = () => {
         })
     })
 
+    shopRouter.route("/postReview").post((req, res) => {
+        const shopId = req.body.shopId
+        const userId = req.body.userId
+        const postedAt = "2020/11/20 16:35"
+        const taste = req.body.taste
+        const price = req.body.price
+        const service = req.body.service
+        const atmosphere = req.body.atmosphere
+        const speed = req.body.speed
+        const about = req.body.about
+        const sql = "INSERT INTO t_reviews VALUES(null,?,?,?,?,?,?,?,?,?);"
+        const placeholder = [shopId, userId, postedAt, taste, price, service, atmosphere, speed, about]
+        client.query(sql, placeholder, (err, result) => {
+            if (err) {
+                throw err
+            }
+            debug(result)
+            res.json(result)
+        })
+    })
 
+    shopRouter.route("/searchFeature").post((req, res) => {
+        const taste = req.body.taste
+        const price = req.body.price
+        const service = req.body.service
+        const atmosphere = req.body.atmosphere
+        const speed = req.body.speed
+        const sql = "SELECT shop_id FROM t_reviews GROUP BY shop_id HAVING avg(taste) > ? AND avg(price) > ? AND avg(service) > ? AND avg(atmosphere) > ? AND avg(speed) > ?;"
+    })
 
     return shopRouter
 }
