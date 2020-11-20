@@ -4,6 +4,14 @@ const client = require("./config/mysql")()
 const geocoder = require("./config/geocoder")
 const debug = require("debug")("app:shops")
 
+const getRate = (shopId) => {
+    return new Promise((resolve, reject) => {
+        const sql =
+            "SELECT shop_id,truncate(AVG(taste),1),truncate(AVG(price),1),truncate(AVG(service),1),truncate(AVG(atmosphere),1),truncate(AVG(speed),1) FROM t_reviews WHERE shop_id = 4 GROUP BY shop_id;"
+        //select shop_id,avg(taste) from t_reviews group by shop_id having avg(taste) > 4.6;
+    })
+}
+
 module.exports = () => {
     shopRouter.route("/getShops").get((req, res) => {
         const sql = "SELECT * FROM m_shops;"
@@ -45,5 +53,8 @@ module.exports = () => {
             debug(err)
         })
     })
+
+
+
     return shopRouter
 }
