@@ -33,7 +33,8 @@ taste DOUBLE(2,1) NOT NULL COMMENT "味",
 price DOUBLE(2,1) NOT NULL COMMENT "値段",
 `service` DOUBLE(2,1) NOT NULL COMMENT "接客",
 atmosphere DOUBLE(2,1) NOT NULL COMMENT "雰囲気",
-speed DOUBLE(2,1) NOT NULL COMMENT "速さ"
+speed DOUBLE(2,1) NOT NULL COMMENT "速さ",
+about VARCHAR(500) COMMENT "内容"
 )CHARACTER SET utf8 COMMENT="レビューテーブル";
 
 CREATE TABLE t_tags(
@@ -148,4 +149,58 @@ null,
 "08090509926",
 "8.jpg",
 "2020/11/18 12:10:00"
+);
+
+
+/* reviews */
+INSERT INTO t_reviews VALUES(
+null,
+4,
+1,
+"2019/12/07",
+"4.5",
+"5.0",
+"5.0",
+"4.0",
+"4.0",
+"価格も安く味もおいしかった。"
+);
+
+INSERT INTO t_reviews VALUES(
+null,
+4,
+1,
+"2019/12/07",
+"5.0",
+"5.0",
+"4.0",
+"4.0",
+"4.0",
+"価格も安く味もおいしかった。"
+);
+
+INSERT INTO t_reviews VALUES(
+null,
+5,
+2,
+"2019/12/07",
+"3.5",
+"5.0",
+"4.0",
+"4.0",
+"4.0",
+"また来ようと思う。"
+);
+
+INSERT INTO t_reviews VALUES(
+null,
+5,
+2,
+"2019/12/07",
+"4.0",
+"5.0",
+"4.0",
+"4.0",
+"4.0",
+"また来たい。"
 );
