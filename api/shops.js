@@ -4,10 +4,18 @@ const client = require("./config/mysql")()
 const geocoder = require("./config/geocoder")
 const debug = require("debug")("app:shops")
 
+let myPromise = Promise.resolve()
+
 const getRate = (shopId) => {
     return new Promise((resolve, reject) => {
         const sql =
-            "SELECT shop_id,truncate(AVG(taste),1),truncate(AVG(price),1),truncate(AVG(service),1),truncate(AVG(atmosphere),1),truncate(AVG(speed),1) FROM t_reviews WHERE shop_id = 4 GROUP BY shop_id;"
+            "SELECT truncate(AVG(taste),1) as taste,truncate(AVG(price),1) as price,truncate(AVG(service),1) as service,truncate(AVG(atmosphere),1) as atmosphere,truncate(AVG(speed),1) as speed FROM t_reviews WHERE shop_id = ? GROUP BY shop_id;"
+        client.query(sql, [shopId], (err, result) => {
+            if (err) {
+                throw err
+            }
+            resolve(result[0])
+        })
         //select shop_id,avg(taste) from t_reviews group by shop_id having avg(taste) > 4.6;
     })
 }
@@ -81,14 +89,22 @@ module.exports = () => {
         const service = req.body.service
         const atmosphere = req.body.atmosphere
         const speed = req.body.speed
-        const sql = "SELECT t_reviews.shop_id,m_shops.shop_name FROM t_reviews INNER JOIN m_shops ON t_reviews.shop_id = m_shops.shop_id GROUP BY shop_id HAVING avg(taste) >= ? AND avg(price) >= ? AND avg(service) >= ? AND avg(atmosphere) >= ? AND avg(speed) >= ?;"
+        const sql = "SELECT t_reviews.shop_id as shop_id,address,m_shops.shop_name FROM t_reviews INNER JOIN m_shops ON t_reviews.shop_id = m_shops.shop_id GROUP BY shop_id HAVING avg(taste) >= ? AND avg(price) >= ? AND avg(service) >= ? AND avg(atmosphere) >= ? AND avg(speed) >= ?;"
         const placeholder = [taste, price, service, atmosphere, speed]
         client.query(sql, placeholder, (err, result) => {
             if (err) {
                 throw err
             }
             debug(result)
-            res.json(result)
+            const resData = []
+            for (let i = 0; i < result.length; i++) {
+                myPromise = myPromise.then(getRate.bind(this, result[i].shop_id)).then((data) => {
+                    resData.push({ ...result[i], graphData: data })
+                    if (i === (result.length - 1)) {
+                        res.json(resData)
+                    }
+                })
+            }
         })
     })
 
