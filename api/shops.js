@@ -62,12 +62,45 @@ module.exports = () => {
         })
     })
 
-    shopRouter.route("/getNearShops").get((req, res) => {
-        const sql = "SELECT * FROM m_shops;"
+    shopRouter.route("/getNearShops").post((req, res) => {
+        if (!("lat" in req.body) || !("lon" in req.body)) {
+            return res.json({ status: "error", message: "no params" })
+        }
+        const stand = 0.00328992141
+        const maxLat = req.query.lat + stand
+        const minLat = req.query.lat - stand
+        const maxLon = req.query.lon + stand
+        const minLon = req.query.lon - stand
+        const sql = "SELECT m_shops.shop_id,shop_name,GROUP_CONCAT(t_tags.tag) as tags FROM m_shops LEFT OUTER JOIN t_tags ON t_tags.shop_id = m_shops.shop_id WHERE latitude <= ? AND latitude >= ? AND longitude <= ? AND longitude >= ? GROUP BY m_shops.shop_id;"
+        client.query(sql, [maxLat, minLat, maxLon, minLon], (err, result) => {
+            if (err) {
+                throw err
+            }
+            debug(result)
+            const resData = []
+            let myPromise = Promise.resolve()
+            for (let i = 0; i < result.length; i++) {
+                myPromise = myPromise.then(getRate.bind(this, result[i].shop_id)).then((data) => {
+                    resData.push({ ...result[i], graphData: data })
+                })
+            }
+            myPromise.then(() => {
+                return new Promise((resolve, reject) => {
+                    res.json(resData)
+                    resolve()
+                })
+            })
+        })
     })
 
     shopRouter.route("/getFavShops").get((req, res) => {
-        const sql = "SELECT MAX(m_shops.shop_id),truncate(AVG(taste) + AVG(price) + AVG(service) + AVG(atmosphere) + AVG(speed),1) as sumall, (SELECT about FROM t_reviews WHERE shop_id = m_shops.shop_id ORDER BY taste + price + service + atmosphere + speed LIMIT 1) as review FROM m_shops INNER JOIN t_reviews ON m_shops.shop_id = t_reviews.shop_id GROUP BY m_shops.shop_id ORDER BY AVG(taste) + AVG(price) + AVG(service) + AVG(atmosphere) + AVG(speed) DESC LIMIT 3"
+        const sql = "SELECT MAX(shop_name) as shop_name,MAX(m_shops.shop_id) as shop_id,truncate(AVG(taste) + AVG(price) + AVG(service) + AVG(atmosphere) + AVG(speed),1) as sumall, (SELECT about FROM t_reviews WHERE shop_id = m_shops.shop_id ORDER BY taste + price + service + atmosphere + speed LIMIT 1) as review FROM m_shops INNER JOIN t_reviews ON m_shops.shop_id = t_reviews.shop_id GROUP BY m_shops.shop_id ORDER BY AVG(taste) + AVG(price) + AVG(service) + AVG(atmosphere) + AVG(speed) DESC LIMIT 3"
+        client.query(sql, (err, result) => {
+            if (err) {
+                throw err
+            }
+            res.json(result)
+        })
     })
 
     shopRouter.route("/searchShops").get((req, res) => {
