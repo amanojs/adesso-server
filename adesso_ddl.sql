@@ -166,6 +166,17 @@ INSERT INTO t_tags VALUES(
 "食堂"
 );
 
+INSERT INTO t_tags VALUES(
+4,
+"中華料理"
+);
+INSERT INTO t_tags VALUES(
+4,
+"餃子12種"
+);
+
+
+
 
 /* reviews */
 INSERT INTO t_reviews VALUES(

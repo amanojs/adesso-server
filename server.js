@@ -7,6 +7,7 @@ const session = require("express-session")
 const chalk = require("chalk")
 const dotenv = require("dotenv")
 const morgan = require("morgan")
+const path = require("path")
 
 const app = express()
 app.use(cors())
@@ -19,6 +20,7 @@ app.use(session({
     resave: false,
     saveUninitialized: true
 }))
+app.use("/images", express.static(path.join(__dirname, "static", "images")))
 dotenv.config()
 const PORT = process.env.PORT || 23450
 
