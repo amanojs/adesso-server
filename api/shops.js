@@ -12,7 +12,7 @@ const getRate = (shopId) => {
             if (err) {
                 throw err
             }
-            resolve(result[0])
+            resolve(result)
         })
         //select shop_id,avg(taste) from t_reviews group by shop_id having avg(taste) > 4.6;
     })
@@ -32,14 +32,21 @@ const getRateByMonth = (shopId) => {
 
 module.exports = () => {
     shopRouter.route("/getShop").get((req, res) => {
-        const sql = "SELECT m_shops.shop_id,shop_name,GROUP_CONCAT(tag) as tags FROM m_shops INNER JOIN t_tags ON m_shops.shop_id = t_tags.shop_id WHERE m_shops.shop_id = 1 GROUP BY m_shops.shop_id;"
-        client.query(sql, (err, result) => {
+        if (!("shopId" in req.query)) {
+            res.json({ status: "error", message: "no param" })
+        }
+        const shopId = req.query.shopId
+        const sql = "SELECT m_shops.shop_id,shop_name,GROUP_CONCAT(tag) as tags FROM m_shops LEFT OUTER JOIN t_tags ON m_shops.shop_id = t_tags.shop_id WHERE m_shops.shop_id = ? GROUP BY m_shops.shop_id;"
+        client.query(sql, [shopId], (err, result) => {
             if (err) {
                 throw err
             }
             const resData = []
             let rateByMonthPromise = Promise.resolve()
             let graphPromise = Promise.resolve()
+            if (result.length === 0) {
+                return res.json({ status: "error", message: "no data" })
+            }
             rateByMonthPromise = rateByMonthPromise.then(getRateByMonth.bind(this, result[0].shop_id)).then((data) => {
                 resData.push({ ...result[0], rateByMonth: data })
             })
