@@ -66,6 +66,10 @@ module.exports = () => {
         const sql = "SELECT * FROM m_shops;"
     })
 
+    shopRouter.route("/getFavShops").get((req, res) => {
+        const sql = "SELECT MAX(m_shops.shop_id),truncate(AVG(taste) + AVG(price) + AVG(service) + AVG(atmosphere) + AVG(speed),1) as sumall, (SELECT about FROM t_reviews WHERE shop_id = m_shops.shop_id ORDER BY taste + price + service + atmosphere + speed LIMIT 1) as review FROM m_shops INNER JOIN t_reviews ON m_shops.shop_id = t_reviews.shop_id GROUP BY m_shops.shop_id ORDER BY AVG(taste) + AVG(price) + AVG(service) + AVG(atmosphere) + AVG(speed) DESC LIMIT 3"
+    })
+
     shopRouter.route("/searchShops").get((req, res) => {
         const area = String(req.query.area)
         let tags = []

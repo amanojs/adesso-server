@@ -222,6 +222,19 @@ null,
 
 INSERT INTO t_reviews VALUES(
 null,
+3,
+3,
+"2020/07/07",
+"4.0",
+"5.0",
+"4.0",
+"4.0",
+"4.0",
+"また来たい。"
+);
+
+INSERT INTO t_reviews VALUES(
+null,
 1,
 5,
 "2020/10/07",
