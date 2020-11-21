@@ -18,14 +18,40 @@ const getRate = (shopId) => {
     })
 }
 
+const getRateByMonth = (shopId) => {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT DATE_FORMAT(posted_at,'%Y-%m') as date,truncate(AVG(taste),1) as taste,truncate(AVG(price),1) as price,truncate(AVG(service),1) as service,truncate(AVG(atmosphere),1) as atmosphere,truncate(AVG(speed),1) as speed FROM t_reviews WHERE shop_id = ? GROUP BY DATE_FORMAT(posted_at,'%Y-%m')"
+        client.query(sql, [shopId], (err, result) => {
+            if (err) {
+                throw err
+            }
+            resolve(result)
+        })
+    })
+}
+
 module.exports = () => {
-    shopRouter.route("/getShops").get((req, res) => {
-        const sql = "SELECT * FROM m_shops;"
+    shopRouter.route("/getShop").get((req, res) => {
+        const sql = "SELECT m_shops.shop_id,shop_name,GROUP_CONCAT(tag) as tags FROM m_shops INNER JOIN t_tags ON m_shops.shop_id = t_tags.shop_id WHERE m_shops.shop_id = 1 GROUP BY m_shops.shop_id;"
         client.query(sql, (err, result) => {
             if (err) {
                 throw err
             }
-            res.json(result)
+            const resData = []
+            let rateByMonthPromise = Promise.resolve()
+            let graphPromise = Promise.resolve()
+            rateByMonthPromise = rateByMonthPromise.then(getRateByMonth.bind(this, result[0].shop_id)).then((data) => {
+                resData.push({ ...result[0], rateByMonth: data })
+            })
+            rateByMonthPromise.then(() => {
+                return new Promise((resolve, reject) => {
+                    graphPromise = graphPromise.then(getRate.bind(this, resData[0].shop_id)).then((data) => {
+                        resData[0] = { ...resData[0], graphData: data }
+                        res.json(resData[0])
+                        resolve()
+                    })
+                })
+            })
         })
     })
 
