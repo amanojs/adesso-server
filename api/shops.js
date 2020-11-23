@@ -36,7 +36,7 @@ module.exports = () => {
             res.json({ status: "error", message: "no param" })
         }
         const shopId = req.query.shopId
-        const sql = "SELECT m_shops.shop_id,shop_name,GROUP_CONCAT(tag) as tags FROM m_shops LEFT OUTER JOIN t_tags ON m_shops.shop_id = t_tags.shop_id WHERE m_shops.shop_id = ? GROUP BY m_shops.shop_id;"
+        const sql = "SELECT m_shops.shop_id,shop_name,address,shop_number,GROUP_CONCAT(tag) as tags,image FROM m_shops LEFT OUTER JOIN t_tags ON m_shops.shop_id = t_tags.shop_id WHERE m_shops.shop_id = ? GROUP BY m_shops.shop_id;"
         client.query(sql, [shopId], (err, result) => {
             if (err) {
                 throw err
@@ -125,7 +125,7 @@ module.exports = () => {
                     [bounds.northeast.lng, bounds.southwest.lng] : [bounds.southwest.lng, bounds.northeast.lng]
             let sql = ""
             if (tags.length) {
-                sql = "SELECT COUNT(tag),(MAX(m_shops.shop_id)) as shop_id,(MAX(m_shops.shop_name)) as shop_name,(SELECT GROUP_CONCAT(tag) FROM t_tags WHERE shop_id = m_shops.shop_id GROUP BY shop_id) as tags FROM m_shops INNER JOIN t_tags ON t_tags.shop_id = m_shops.shop_id WHERE latitude < ? AND latitude > ? AND longitude < ? AND longitude > ?"
+                sql = "SELECT image,COUNT(tag),(MAX(m_shops.shop_id)) as shop_id,(MAX(m_shops.shop_name)) as shop_name,(SELECT GROUP_CONCAT(tag) FROM t_tags WHERE shop_id = m_shops.shop_id GROUP BY shop_id) as tags FROM m_shops INNER JOIN t_tags ON t_tags.shop_id = m_shops.shop_id WHERE latitude < ? AND latitude > ? AND longitude < ? AND longitude > ?"
                 for ([i, tag] of tags.entries()) {
                     if (i === 0) {
                         sql += ` AND t_tags.tag LIKE '%${tag}%'`
@@ -136,7 +136,7 @@ module.exports = () => {
                 sql += ` GROUP BY m_shops.shop_id HAVING COUNT(tag) = ${tags.length}`
                 debug(sql)
             } else {
-                sql = "SELECT m_shops.shop_id,m_shops.shop_name,GROUP_CONCAT(t_tags.tag) as tags FROM m_shops LEFT OUTER JOIN t_tags ON t_tags.shop_id = m_shops.shop_id WHERE latitude < ? AND latitude > ? AND longitude < ? AND longitude > ? GROUP BY m_shops.shop_id"
+                sql = "SELECT image,m_shops.shop_id,m_shops.shop_name,GROUP_CONCAT(t_tags.tag) as tags FROM m_shops LEFT OUTER JOIN t_tags ON t_tags.shop_id = m_shops.shop_id WHERE latitude < ? AND latitude > ? AND longitude < ? AND longitude > ? GROUP BY m_shops.shop_id"
             }
             debug(sql)
             client.query(sql, [...com.lat, ...com.lon], (err, result) => {
@@ -179,6 +179,20 @@ module.exports = () => {
                 throw err
             }
             debug(result)
+            res.json(result)
+        })
+    })
+
+    shopRouter.route("/getReview").get((req, res) => {
+        if (!("shopId" in req.query)) {
+            return res.json({ status: "error", message: "no params" })
+        }
+        const sql = "SELECT review_id,taste,price,service,atmosphere,speed,about,date_format(posted_at, '%Y年%m月%d日') as posted_at FROM t_reviews WHERE shop_id = ?"
+        const shop_id = req.query.shopId
+        client.query(sql, [shop_id], (err, result) => {
+            if (err) {
+                throw err
+            }
             res.json(result)
         })
     })
